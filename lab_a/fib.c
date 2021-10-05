@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<assert.h>
 #include<stdbool.h>
+#include<stdlib.h>
 
 int fib ( int n )
 {
@@ -32,13 +33,11 @@ int main ()
 		assert ( false );
 	}
 
-	printf ( "The fibonacci series upto %d term is :\n" );
+	printf ( "The fibonacci series upto %d term is :\n", n );
 	for ( int i = 0 ; i < n ; ++i ) {
 		printf ( "%d ", fib ( i ) );
 	}
 	puts("\n");
 
-
 	return 0;
 }
-
