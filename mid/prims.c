@@ -6,6 +6,9 @@
 const int INF = 1e5 + 5;
 const int NIL = -1 * 1e5 + 5;
 
+#define nax 130
+int mp[nax], N;
+
 typedef struct {
 	int no_of_nodes;
 	int **edges;
@@ -75,20 +78,26 @@ int get_coast ( graph* g, int start, int end )
 
 void print_prims_graph ( graph* g )
 {
-	printf ( "The edges list ont the MST are in the form of\n" );
+	printf ( "\nThe edges list ont the MST are in the form of\n" );
 	printf ( "node - node -> coast\n" );
 	printf ( "Edges {\n" );
 	int sum = 0;
 	for ( int i = 0 ; i < g -> no_of_nodes ; ++i ) {
 		for ( int j = 0 ; j < g -> no_of_nodes ; ++j ) {
 			if ( have_edge ( g, i, j ) ) {
-				printf ( "%d - %d -> %d\n", i, j, g->edges[i][j] );
+				char ll, rr;
+				for ( int ii = 0 ; ii < nax ; ++ii ) {
+					if ( mp[ii] == i ) ll = ii;
+					if ( mp[ii] == j ) rr = ii;
+				}
+				printf ( "%c - %c -> %d\n", ll, rr, g->edges[i][j] );
 				sum += g->edges[i][j];
 			}
 		}
 	}
-	printf ( "}\n" );
-	printf ( "The Total coast of the spanning tree is : %d\n", sum );
+	printf ( "}\n\n" );
+	printf ( "The Total coast of the spanning tree is : %d", sum );
+	puts ( "\n" );
 }
 
 graph* input_graph ()
@@ -106,14 +115,25 @@ graph* input_graph ()
 	printf ( "Enter the edges details in the form :\n" );
 	printf ( "node - node - coast\n" );
 
+	N = 0;
+	for ( int i = 0 ; i < nax ; ++i ) mp[i] = -1;
 	graph* g = create_graph ( nodes );
 	if ( g != NULL ) {
 		// undirected
-		int start = -1, end = -1, coast = -1;
+		char start[3], end[3];
+		int coast, ll, rr;
 		for ( int i = 0 ; i < edges ; ++i ) {
-			scanf ( "%d%d%d", &start, &end, &coast );
-			add_edge ( g, start, end, coast );
-			add_edge ( g, end, start, coast );
+			scanf ( "%s%s%d", start, end, &coast );
+			if ( mp[(int)start[0]] == -1 ) {
+				mp[(int)start[0]] = N++;
+				ll = mp[(int)start[0]];
+			} else ll = mp[(int)start[0]];
+			if ( mp[(int)end[0]] == -1 ) {
+				mp[(int)end[0]] = N++;
+				rr = mp[(int)end[0]];
+			} else rr = mp[(int)end[0]];
+			add_edge ( g, ll, rr, coast );
+			add_edge ( g, rr, ll, coast );
 		}
 	} else {
 		exit ( 1 );

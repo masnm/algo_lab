@@ -73,22 +73,17 @@ int get_coast ( graph* g, int start, int end )
 	return g -> edges [ start ] [ end ];
 }
 
-void print_prims_graph ( graph* g )
+void print_graph ( graph* g )
 {
-	printf ( "The edges list ont the MST are in the form of\n" );
-	printf ( "node - node -> coast\n" );
 	printf ( "Edges {\n" );
-	int sum = 0;
 	for ( int i = 0 ; i < g -> no_of_nodes ; ++i ) {
 		for ( int j = 0 ; j < g -> no_of_nodes ; ++j ) {
 			if ( have_edge ( g, i, j ) ) {
-				printf ( "%d - %d -> %d\n", i, j, g->edges[i][j] );
-				sum += g->edges[i][j];
+				printf ( "%d -> %d = %d\n", i, j, g->edges[i][j] );
 			}
 		}
 	}
 	printf ( "}\n" );
-	printf ( "The Total coast of the spanning tree is : %d\n", sum );
 }
 
 graph* input_graph ()
@@ -102,9 +97,6 @@ graph* input_graph ()
 	// virtual nodes & edge limits
 	assert ( nodes > 0 && nodes < 3005 );
 	assert ( edges > -1 && edges < 9000005 );
-
-	printf ( "Enter the edges details in the form :\n" );
-	printf ( "node - node - coast\n" );
 
 	graph* g = create_graph ( nodes );
 	if ( g != NULL ) {
@@ -248,7 +240,7 @@ void pq_destroy ( priority_queue* pq )
 	free  ( pq -> data );
 }
 
-graph* prims_mst ( graph* g, void* w, int r )
+void prims_mst ( graph* g, void* w, int r )
 {
 	priority_queue pq = pq_create ();
 	for ( int i = 0 ; i < g -> no_of_nodes ; ++i ) {
@@ -259,12 +251,11 @@ graph* prims_mst ( graph* g, void* w, int r )
 		};
 		pq_insert ( &pq, u );
 	}
-	graph* pri = create_graph ( g -> no_of_nodes );
 	decrease_key ( &pq, r, 0 );
 	while ( ! pq_empty ( &pq ) ) {
 		st s = extract_min ( &pq );
-		if ( s.parent != NIL )
-			add_edge ( pri, s.parent, s.node_no, s.key );
+		// pq_print ( &pq );
+		printf ( "AA: %d %d %d\n", s.key, s.node_no, s.parent );
 		for ( int i = 0 ; i < g->no_of_nodes ; ++i ) {
 			if ( pq_exists ( &pq, i ) && have_edge ( g, i, s.node_no )
 				&& get_coast ( g, i, s.node_no ) < pq_get_key ( &pq, i ) ) {
@@ -273,18 +264,16 @@ graph* prims_mst ( graph* g, void* w, int r )
 			}
 		}
 	}
-	return pri;
 }
 
 int main ()
 {
 	graph* g = input_graph ();
+	print_graph ( g );
 
-	graph* prim = prims_mst ( g, NULL, 0 );
-	print_prims_graph ( prim );
+	prims_mst ( g, NULL, 0 );
 
 	destroy_graph ( g );
-	destroy_graph ( prim );
 
 	return 0;
 }
