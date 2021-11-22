@@ -150,47 +150,85 @@ void queue_destroy ( queue* q )
 	(*q).data = NULL;
 }
 
-void bfs ( graph* g, int root )
+typedef struct tuple {
+	bool visited;
+	int parent;
+	int distance;
+} tuple ;
+
+typedef struct tuple_array {
+	int size;
+	tuple* data;
+} tuple_array ;
+
+tuple_array tuple_array_create ( int n )
 {
-	printf ( "BFS traversal : " );
+	tuple_array tpar = {
+		.size = n,
+		.data = (tuple*) malloc ( sizeof(tuple) * n )
+	};
+	for ( int i = 0 ; i < n ; ++i ) {
+		tpar.data [ i ] . visited = false;
+		tpar.data [ i ] . parent = -1;
+		tpar.data [ i ] . distance = -1;
+	}
+	return tpar;
+}
+
+void tuple_array_destroy ( tuple_array* tp )
+{
+	free ( tp->data );
+	tp -> size = 0;
+	tp -> data = NULL;
+}
+
+tuple_array bfs ( graph* g, int root )
+{
 	queue que_int = queue_create ();
-	bool v[1001] = { };
-	v[root] = true;
+	tuple_array tpar = tuple_array_create ( g->no_of_nodes );
+	tpar.data [ root ] . visited = true;
+	tpar.data [ root ] . parent = -1;
+	tpar.data [ root ] . distance = 0;
 	queue_enqueue ( &que_int, root );
 	while ( !queue_empty ( &que_int ) ) {
 		int cp = queue_front ( &que_int );
 		queue_dequeue ( &que_int );
-		printf ( "%d ", cp );
 		for ( int i = 0 ; i < g -> no_of_nodes ; ++i ) {
-			if ( !v[i] && g -> edges [ cp ] [ i ] ) {
-				v[i] = true;
+			if ( !tpar.data[i].visited && g -> edges [ cp ] [ i ] ) {
+				tpar.data[i].visited = true;
+				tpar.data[i].parent = cp;
+				tpar.data[i].distance = tpar.data[cp].distance + 1;
 				queue_enqueue ( &que_int, i );
 			}
 		}
 	}
 	queue_destroy ( &que_int );
-	puts ( "" );
+	return tpar;
 }
 
-void dfs ( graph* g, int root )
+void print_path ( tuple_array bfar, int root, int target )
 {
-	printf ( "DFS traversal : " );
-	int st[1001], ss = 0, se = 0;
-	bool v[1001] = { };
-	// v[root] = true;
-	st[se++] = root;
-	while ( ss != se ) {
-		int cp = st[--se];
-		if ( v[cp] ) continue;
-		v[cp] = true;
-		printf ( "%d ", cp );
-		for ( int i = 0 ; i < g -> no_of_nodes ; ++i ) {
-			if ( !v[i] && g -> edges [ cp ] [ i ] ) {
-				st[se++] = i;
-			}
-		}
+	int* ar = (int*) malloc ( sizeof(int) * bfar.size );
+	for ( int i = 0 ; i < bfar.size ; ++i ) ar[i] = -1;
+	int cr = target, ind = 0;
+	ar[ind++] = target;
+	while ( bfar.data [cr] . parent != -1 ) {
+		ar [ ind++ ] = bfar.data [cr] . parent;
+		cr = bfar.data [cr] . parent;
 	}
-	puts ( "" );
+	if ( ar[ind-1] != 0 ) {
+		printf ( "Can't reach %d from %d.", target, root );
+		puts ( "" );
+	} else {
+		printf ( "Distance from %d to %d is : %d. ",
+				root, target, bfar.data[target].distance );
+		printf ( "Path is : " );
+		for ( int i = ind - 1 ; i > -1 ; --i ) {
+			printf ( " %d ", ar[i] );
+		}
+		puts ( "" );
+	}
+	free ( ar );
 }
 
 int main ()
@@ -198,9 +236,17 @@ int main ()
 	graph* g = input_graph ();
 //	print_graph ( g );
 
-	bfs ( g, 0 );
-	dfs ( g, 0 );
+	int root;
+	printf ( "Enter the Starting Node : " );
+	scanf ( "%d", &root );
 
+	tuple_array bfar = bfs ( g, root );
+
+	for ( int i = 0 ; i < bfar.size ; ++i ) {
+		print_path ( bfar, root, i );
+	}
+
+	tuple_array_destroy ( &bfar );
 	destroy_graph ( g );
 
 	return 0;
